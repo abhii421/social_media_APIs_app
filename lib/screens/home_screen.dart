@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:social_media/api/api_service.dart';
 import 'package:social_media/models/app_data.dart';
 import 'package:social_media/screens/post_details_screen.dart';
+import 'package:social_media/screens/user_profile_screen.dart';
+import 'package:social_media/screens/write_post_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,6 +30,23 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('All Posts'),
+        actions: [
+          IconButton(onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+            return WritePostScreen();
+          },));
+          }, icon: const Icon(Icons.add_circle_sharp)),
+
+          IconButton(onPressed: () {
+            showDialog(context: context, builder: (context) {
+              return AlertDialog(content: Text('Scroll down to the bottom to see the post with new'),);
+            },);
+          }, icon: Icon(Icons.info))
+
+        ],),
+
       body: Column(
         children: [
           const SizedBox(height: 10,),
@@ -52,19 +71,30 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Column(
                           children: [
-                            Row(children: [
-                              Text('Post ID : '),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(AppData.instance.observablePosts[index].id.toString()),
-                              ),
-                              Spacer(),
-                              Text('User ID : '),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(AppData.instance.observablePosts[index].userId.toString()),
-                              ),
-                            ],),
+                            InkWell(
+                              child: Row(children: [
+                                Text('Post ID : '),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(AppData.instance.observablePosts[index].id.toString()),
+                                ),
+                                Spacer(),
+                                Text('User ID : '),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(AppData.instance.observablePosts[index].userId.toString()),
+                                ),
+                              ],),
+                              onTap: () {
+                              //ApiServices().fetchUser(AppData.instance.observablePosts[index].userId!);
+                                AppData.instance.userId = AppData.instance.observablePosts[index].userId!;
+                                AppData.instance.fetchUserData();
+                                Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                                  return UserProfileScreen();
+                                },));
+
+                              },
+                            ),
 
                             Text(AppData.instance.observablePosts[index].title ?? 'No Title', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),),
                             Padding(
@@ -89,11 +119,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               onTap: () {
                                 AppData.instance.postId = index+1;
-                                print('/////////////////////');
-                                print(AppData.instance.postId);
-                                print('/////////////////////');
+                                //print('/////////////////////');
+                                // print(AppData.instance.postId);
+                                // print('/////////////////////');
                                 AppData.instance.fetchComments();
-                                print(AppData.instance.observableCommentList);
+                                //print(AppData.instance.observableCommentList);
                                 Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                                   return PostDetailsScreen();
                                 },));

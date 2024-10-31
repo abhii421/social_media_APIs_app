@@ -5,6 +5,7 @@ import 'package:social_media/exceptions/app_exceptions.dart';
 import 'package:social_media/models/comment_model.dart';
 import 'package:social_media/models/post_model.dart';
 import 'package:dio/dio.dart';
+import 'package:social_media/models/user_model.dart';
 
 final dio = Dio();
 final baseUrl = 'https://jsonplaceholder.typicode.com';
@@ -22,7 +23,7 @@ class ApiServices{
                         postList.add(PostModel.fromJson(i));
                   }
 
-                  print(postList);
+                  //print(postList);
                   return postList;
             } else if(response.statusCode == 404){
                   throw AppExceptions('The data you requested was not found');
@@ -37,6 +38,31 @@ class ApiServices{
                   else{
                   throw AppExceptions('Something went wrong!');
             }
+      }
+
+
+
+      Future<Map<String, dynamic>> giveResponseAfterPosting(Map<String, dynamic> postData) async{
+                  final response = await dio.post('$baseUrl/posts', data: postData);
+
+                  if(response.statusCode == 200 || response.statusCode == 201) {
+                        //print(response.data);
+                        //response.data[];
+                        return response.data;
+
+                  }else if(response.statusCode == 404){
+                        throw AppExceptions('The data you requested was not found');
+
+                  }
+                  else if(response.statusCode == 400){
+                        throw AppExceptions('The request made was not correct');
+                  }
+                  else if(response.statusCode == 401){
+                        throw AppExceptions('It is an unauthorised request');
+                  }
+                  else{
+                        throw AppExceptions('Something went wrong!');
+                  }
       }
 
 
@@ -74,6 +100,41 @@ class ApiServices{
             else{
                   throw AppExceptions('Something went wrong!');
             }
+      }
+
+
+
+
+      Future<List<UserModel>> fetchUser(int userId) async{
+            var response = await dio.get('$baseUrl/users/?id=$userId');
+            List<UserModel> listOfSingleUser = [];
+
+            if(response.statusCode == 200 ||response.statusCode == 201){
+
+                  for(Map<String, dynamic> i in response.data){
+                        listOfSingleUser.add(UserModel.fromJson(i));
+                        //print(listOfSingleUser);
+                  }
+
+                        return listOfSingleUser;
+                  // print(response.data);
+                  // print('**********************');
+                  // print(UserModel.fromJson(response.data));
+                  //Map<String, dynamic> userMap = UserModel.fromJson(response.data);
+            }else if(response.statusCode == 404){
+                  throw AppExceptions('The data you requested was not found');
+
+            }
+            else if(response.statusCode == 400){
+                  throw AppExceptions('The request made was not correct');
+            }
+            else if(response.statusCode == 401){
+                  throw AppExceptions('It is an unauthorised request');
+            }
+            else{
+                  throw AppExceptions('Something went wrong!');
+            }
+
       }
 
 
