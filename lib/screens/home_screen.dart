@@ -1,15 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+//import 'package:http/http.dart' as http;
 import 'package:social_media/api/api_service.dart';
 import 'package:social_media/models/app_data.dart';
 import 'package:social_media/screens/post_details_screen.dart';
 import 'package:social_media/screens/user_profile_screen.dart';
 import 'package:social_media/screens/write_post_screen.dart';
 
+final AppData appData1 = Get.find<AppData>();
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key} );
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -23,9 +25,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
 
     super.initState();
-    AppData.instance.fetchPosts();
+    print('Home Screen Reloaded***************************************');
+    appData1.fetchPosts();
+    appData1.observableCommentList.clear();
   }
-
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -36,14 +40,23 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(builder: (context) {
             return WritePostScreen();
-          },));
-          }, icon: const Icon(Icons.add_circle_sharp)),
+              },));
+            }, icon: const Icon(Icons.add_circle_sharp)),
 
           IconButton(onPressed: () {
             showDialog(context: context, builder: (context) {
-              return AlertDialog(content: Text('Scroll down to the bottom to see the post with new'),);
+              return AlertDialog(
+                content: const Text('Scroll down to the bottom to see the latest posts'),
+                actions: [
+                  Center(
+                    child: ElevatedButton(onPressed: () {
+                      Navigator.of(context).pop();
+                      },
+                      child: const Text('Okay!')),
+                ),
+              ],);
             },);
-          }, icon: Icon(Icons.info))
+            }, icon: const Icon(Icons.info))
 
         ],),
 
@@ -61,7 +74,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: Obx(()=>
                ListView.builder(
-                itemCount: AppData.instance.observablePosts.length,
+                 controller: _scrollController,
+                itemCount: appData1.observablePosts.length,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 11),
@@ -73,22 +87,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             InkWell(
                               child: Row(children: [
-                                Text('Post ID : '),
+                                const Text('Post ID : '),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: Text(AppData.instance.observablePosts[index].id.toString()),
+                                  child: Text(appData1.observablePosts[index].id.toString()),
                                 ),
-                                Spacer(),
-                                Text('User ID : '),
+                                const Spacer(),
+                                const Text('User ID : '),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: Text(AppData.instance.observablePosts[index].userId.toString()),
+                                  child: Text(appData1.observablePosts[index].userId.toString()),
                                 ),
                               ],),
                               onTap: () {
                               //ApiServices().fetchUser(AppData.instance.observablePosts[index].userId!);
-                                AppData.instance.userId = AppData.instance.observablePosts[index].userId!;
-                                AppData.instance.fetchUserData();
+                                appData1.userId = appData1.observablePosts[index].userId ?? 1;
+                                appData1.fetchUserData();
                                 Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                                   return UserProfileScreen();
                                 },));
@@ -96,19 +110,19 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                             ),
 
-                            Text(AppData.instance.observablePosts[index].title ?? 'No Title', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),),
+                            Text(appData1.observablePosts[index].title ?? 'No Title', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17),),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 12),
-                              child: Text(AppData.instance.observablePosts[index].body ?? 'No Body'),
+                              child: Text(appData1.observablePosts[index].body ?? 'No Body'),
                             ),
                             InkWell(
                               child: Row(
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                  const Padding(
+                                    padding:  EdgeInsets.all(8.0),
                                     child: Text('See all Comments', style: TextStyle(fontSize: 12),),
                                   ),
-                                  Spacer(),
+                                  const Spacer(),
                                   IconButton(onPressed: () {
                                     Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                                       return PostDetailsScreen();
@@ -118,11 +132,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ],
                               ),
                               onTap: () {
-                                AppData.instance.postId = index+1;
+                                //appData1.postId = index+1;
                                 //print('/////////////////////');
                                 // print(AppData.instance.postId);
                                 // print('/////////////////////');
-                                AppData.instance.fetchComments();
+                                appData1.fetchComments(index+1);
                                 //print(AppData.instance.observableCommentList);
                                 Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                                   return PostDetailsScreen();
@@ -139,6 +153,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           )
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: Duration(milliseconds: 10),
+            curve: Curves.easeInOut,
+          );
+        },
+        child: Icon(Icons.arrow_downward),
       ),
     );
   }

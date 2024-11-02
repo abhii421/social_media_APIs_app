@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:social_media/models/app_data.dart';
 import 'package:social_media/screens/home_screen.dart';
+import 'package:get/get.dart';
 
 void main() {
+  Get.put(AppData.instance);
+  //Get.put(AppData);
+  //Added the AppData (singleton class) dependency in the entire app
   runApp(const MyApp());
 }
 
@@ -11,7 +16,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
