@@ -11,21 +11,19 @@ class AppData extends GetxController{
 
   static final AppData instance = AppData._privateConstructor();
   //I have created a single instance of AppData class to be accessed later on when getting data
-
-  final RxList<PostModel> observablePosts = <PostModel>[].obs;
   final ApiServices apiServicesInstance = ApiServices();
 
 
-  void assignPosts(List<PostModel> postsList) async{
-    observablePosts.assignAll(postsList);
-  }
 
+
+  final RxList<PostModel> observablePostsList = <PostModel>[].obs;
 
   Future<void> fetchPosts() async{
-    //final apiService = ApiServices();
 
     List<PostModel> postList = await apiServicesInstance.getPosts();
-    assignPosts(postList);
+    observablePostsList.assignAll(postList);
+
+    //assignPosts(postList);
 //I have got the list from the apiServices, stored it in a list,(postList) assigned it/equalled it/gave it to another list which is observable now.
     //This observable list is the one being used in homepage.dart i.e. it is under observation.
     //Whenever there's a change in such a list, this list under observation will come to be known by Obx in the homepage.dart
@@ -51,81 +49,47 @@ class AppData extends GetxController{
 
 
 
-
-  Future<void> createPost (Map<String, dynamic> postData)async{
-
-
-    final response = await apiServicesInstance.giveResponseAfterPosting(postData);
-    print(response);
-
-    //print(response);
-    // <PostModel> newPostForAddition = {
-    //
-    // };
-    //response[userId]
-
-
-    // Iterable<MapEntry<String, dynamic>> listOfMapEntry = response.entries;
-    //
-    // listOfMapEn
-    observablePosts.add(PostModel.fromJson(response));
-
-
-  }
-
-
-
-
-
-
-
-
-
-
   //int postId = 1;
   final RxList<CommentModel> observableCommentList = <CommentModel>[].obs;
 
   Future<void> fetchComments(int postId) async{
     observableCommentList.clear();
 
-    final apiServices = ApiServices();
-
-    List<CommentModel> commentListFromApiServices = await apiServices.fetchCommentForPost(postId);
-
-    observableCommentList.assignAll(commentListFromApiServices);
-
+    //final apiServices = ApiServices();
+    List<CommentModel> fetchedCommentsList = await apiServicesInstance.fetchCommentForPost(postId);
+    observableCommentList.assignAll(fetchedCommentsList);
+    // commentsLoading.value = false;
+    // print(commentsLoading.value);
   }
 
 
-  // var selectedUser = Rx<UserModel>.;
 
 
-  int userId = 1;
+  //int userId = 1;
   final RxList<UserModel> observableSingleUserList = <UserModel>[].obs;
 
-  Future<void> fetchUserData() async{
+  Future<void> fetchUserData(int userId) async{
     observableSingleUserList.clear();
-    final apiServices = ApiServices();
-    List<UserModel> userList1 = await apiServices.fetchUser(userId);
-    observableSingleUserList.assignAll(userList1);
+    List<UserModel> fetchedUserList = await apiServicesInstance.fetchUser(userId);
+    observableSingleUserList.assignAll(fetchedUserList);
+    //userListLoading.value = false;
+
   }
 
 
+  final RxList<UserModel> observableSearchedUsersList = <UserModel>[].obs;
+
+  Future<void> searchUserFunction (int userId) async{
+    observableSearchedUsersList.clear();
+    List<UserModel> fetchedSearchedUserList = await apiServicesInstance.searchAndReturnUser(userId);
+    observableSearchedUsersList.assignAll(fetchedSearchedUserList);
+  }
 
 
-
-
-
-  // Map<String, dynamic> newPostMap(){
-  //
-  //
-  // }
-
-  //  Map<String, dynamic> newPostMap = {};
-  //
-  // void sendMapToPost(){
-  //   print(newPostMap);
-  // }
+  Future<void> createPost (Map<String, dynamic> postData)async{
+    final response = await apiServicesInstance.giveResponseAfterPosting(postData);
+    observablePostsList.add(PostModel.fromJson(response));
+  }
 
 
 }

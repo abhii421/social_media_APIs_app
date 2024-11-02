@@ -9,8 +9,10 @@ import 'package:social_media/models/user_model.dart';
 
 final dio = Dio();
 final baseUrl = 'https://jsonplaceholder.typicode.com';
-
-
+RxBool commentsLoading = true.obs;
+RxBool userListLoading = true.obs;
+RxBool postsLoading = true.obs;
+RxBool searchedUserLoading = true.obs;
 
 class ApiServices{
 
@@ -22,8 +24,9 @@ class ApiServices{
                   for (Map<String, dynamic> i in response.data) {
                         postList.add(PostModel.fromJson(i));
                   }
-
+                  postsLoading.value = false;
                   //print(postList);
+
                   return postList;
             } else if(response.statusCode == 404){
                   throw AppExceptions('The data you requested was not found');
@@ -72,6 +75,7 @@ class ApiServices{
 
       Future<List<CommentModel>> fetchCommentForPost(int relatedPostId) async{
 
+
             List<CommentModel> commentListForIndividualPost = [];
             final response = await dio.get('$baseUrl/comments/?postId=$relatedPostId');
             // print('\n');
@@ -87,7 +91,9 @@ class ApiServices{
                         commentListForIndividualPost.add(CommentModel.fromJson(i));
                   }
                   //print(response.data);
+                  commentsLoading.value = false;
                   return commentListForIndividualPost;
+
             }else if(response.statusCode == 404){
                   throw AppExceptions('The data you requested was not found');
 
@@ -116,12 +122,9 @@ class ApiServices{
                         listOfSingleUser.add(UserModel.fromJson(i));
                         //print(listOfSingleUser);
                   }
+                  userListLoading.value = false;
+                  return listOfSingleUser;
 
-                        return listOfSingleUser;
-                  // print(response.data);
-                  // print('**********************');
-                  // print(UserModel.fromJson(response.data));
-                  //Map<String, dynamic> userMap = UserModel.fromJson(response.data);
             }else if(response.statusCode == 404){
                   throw AppExceptions('The data you requested was not found');
 
@@ -135,8 +138,38 @@ class ApiServices{
             else{
                   throw AppExceptions('Something went wrong!');
             }
-
       }
+
+
+
+      Future<List<UserModel>> searchAndReturnUser(int receivedUserId) async {
+
+            var response = await dio.get('$baseUrl/users/?id=$receivedUserId');
+            List<UserModel> listOfSearchedUser = [];
+
+            if(response.statusCode == 200 ||response.statusCode == 201){
+                  for(Map<String, dynamic> i in response.data){
+                        listOfSearchedUser.add(UserModel.fromJson(i));
+                  }
+                  searchedUserLoading.value = false;
+                  return listOfSearchedUser;
+
+            }else if(response.statusCode == 404){
+                  throw AppExceptions('The data you requested was not found');
+
+            }
+            else if(response.statusCode == 400){
+                  throw AppExceptions('The request made was not correct');
+            }
+            else if(response.statusCode == 401){
+                  throw AppExceptions('It is an unauthorised request');
+            }
+            else{
+                  throw AppExceptions('Something went wrong!');
+            }
+      }
+
+
 
 
 
